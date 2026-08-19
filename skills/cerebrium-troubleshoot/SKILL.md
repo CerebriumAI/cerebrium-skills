@@ -1,11 +1,11 @@
 ---
 name: cerebrium-troubleshoot
 description: >-
-  Diagnose a Cerebrium app from the terminal: read build and runtime logs, inspect containers,
-  list runs, check app state and scaling, and work through the usual failures (build timeouts,
-  a custom runtime that never becomes ready, requests that queue, 401s, no replicas in a pinned
-  region, slow cold starts). Use when a deploy fails, an app returns errors, latency is bad, or
-  an app is not scaling as configured.
+  Diagnose a Cerebrium app from the terminal: read runtime logs, inspect containers, list runs,
+  check the config actually in effect, and work through the usual failures (build timeouts, a
+  custom runtime that never becomes ready, requests that queue, 401s, no replicas in a pinned
+  region, settings that revert after a deploy, slow cold starts). Use when a deploy fails, an app
+  returns errors, latency is bad, or an app is not behaving the way its cerebrium.toml says.
 license: MIT
 metadata:
   author: cerebrium
@@ -21,27 +21,34 @@ timings.
 
 ```bash
 cerebrium apps list                    # what exists, and its state
-cerebrium apps get APP_ID              # config actually in effect, including scaling
-cerebrium logs APP_NAME                # follows by default
+cerebrium apps get APP_ID              # the config actually in effect, including scaling
+cerebrium logs APP_NAME                # runtime logs, follows by default
 cerebrium logs APP_NAME --no-follow --since 30m
 cerebrium containers list APP_NAME     # per-container state: pending, running, restarting
 cerebrium runs list APP_NAME           # recent invocations
 cerebrium status                       # platform status, before assuming it is your code
 ```
 
-Start with `apps get`. Config drift (a `max_replicas` or `disable_auth` that is not what the
-local TOML says) explains a surprising share of reports, since `cerebrium apps scale` and the
-dashboard can both change a live app.
+Start with `apps get`. Comparing it against the local `cerebrium.toml` catches the two most
+common surprises at once: a setting someone changed with `cerebrium apps scale`, and a setting
+that reverted because the deployed TOML did not carry it.
+
+**Build logs are not in `cerebrium logs`.** They stream from `cerebrium deploy` while the build
+runs. If a build failed and the output is gone, redeploy without `--detach` and without
+`--disable-build-logs`.
 
 ## Common failures
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Build fails partway through apt or pip | A dependency, not the platform. The failing command is in the build log. | `cerebrium logs APP_NAME`, pin the version, batch apt changes (they force a full rebuild). |
+| Build fails partway through apt or pip | A dependency, not the platform | Read the failing command in the deploy output, pin the version, batch apt changes (they force a full rebuild). |
 | Build times out during model load | `deployment_initialization_timeout` (default 600s) | Raise it, ceiling 830. Better: move weights to `/persistent-storage`. |
+| A setting reverted after a deploy | The key was absent from `cerebrium.toml`, so the deploy reset it | Put every value that matters in the file. See **cerebrium-config**. |
+| Deploy rejected for CPU, memory or GPU count | Per-type limits, or the plan's ceiling, whichever is stricter | Check both tables in **cerebrium-hardware**. |
 | Custom runtime deploys but never serves traffic | `port` does not match the port inside `entrypoint`, or `readycheck_endpoint` is not answering 200 | Align them. An unready instance is silently removed from routing. |
-| App is up, requests queue or time out | `max_replicas` is 1 by default | Raise `max_replicas`, and check `replica_concurrency` (1 per replica on GPU). |
+| App is up, requests queue or time out | `max_replicas` is 1 by default | Raise `max_replicas`, and check `replica_concurrency` (1 per replica on an accelerator). |
 | Deployed, but no replica ever starts | The pinned `region` does not carry the requested `compute`, or there is no capacity | Widen `compute` into a preference list, or drop the `region` pin. See **cerebrium-hardware**. |
+| Scaling never triggers on CPU or memory | `cpu_utilization` and `memory_utilization` need `min_replicas >= 1` | Set a floor, or scale on concurrency instead. |
 | 401 or 403 from the endpoint | `disable_auth = false` and no or wrong `Authorization: Bearer` | Send a JWT from API Keys, or a service account token. |
 | Anyone on the internet can call it | `disable_auth = true`, which is what `cerebrium init` scaffolds | Set `false` and redeploy. |
 | Secret is missing at runtime | Secrets load at container start | `cerebrium secrets add`, then redeploy or restart. |
@@ -49,17 +56,20 @@ dashboard can both change a live app.
 
 ## Cold starts
 
-Measure first: startup timings are in `cerebrium logs APP_NAME`. Do not quote a platform-wide
-cold start number, it depends entirely on image size and what the app loads.
+Measure first: container startup appears in `cerebrium logs APP_NAME`. Do not quote a
+platform-wide cold start number, it depends entirely on image size and what the app loads.
 
-Then, in order of payoff:
+Then, in the order the platform documentation recommends:
 
-1. Move every model load and client init to module scope so it happens once per replica.
-2. Serve weights from `/persistent-storage` instead of baking them into the image.
-3. Use a fast loader (Tensorizer, FlashPack) for large weights.
-4. Enable checkpointing to capture state after initialisation.
-5. Only then buy warmth: `min_replicas > 0`, `scaling_buffer`, or a longer `cooldown`. This is
-   the option that costs money continuously, so raise it with the user first.
+1. **Store weights on `/persistent-storage`** instead of baking them into the image. Reads are
+   cached per region, so later cold starts in that region are faster.
+2. **Run initialisation at module scope** so model loads and client setup happen once per
+   container, not per request.
+3. **Load weights straight to the GPU** with Tensorizer or FlashPack for large models.
+4. **Restore from a checkpoint** (`[cerebrium.experimental] checkpointing = true` plus the
+   in-container trigger) when initialisation repeats work that never changes.
+5. **Then buy warmth**: `min_replicas`, `scaling_buffer`, a longer `cooldown`, or a lower
+   `scaling_target` for headroom. These cost money continuously, so raise them with the user first.
 
 Reference: `https://cerebrium.ai/docs/performance/faster-cold-starts` and
 `https://cerebrium.ai/docs/performance/checkpointing`.

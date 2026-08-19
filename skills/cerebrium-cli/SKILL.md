@@ -54,7 +54,7 @@ cerebrium region set us-east-1        # default region for the file commands
 
 | Command | Notes |
 | --- | --- |
-| `cerebrium init <name>` | Writes `main.py` and `cerebrium.toml`. Name is required. |
+| `cerebrium init <name>` | Writes `main.py` and `cerebrium.toml`. Name is required. `--dir` chooses where. |
 | `cerebrium deploy` | `--name`, `--config-file ./cerebrium.toml`, `-y`/`--disable-confirmation`, `--yes`, `--detach`, `--disable-build-logs`, `--disable-syntax-check`, `--log-level DEBUG\|INFO`. |
 | `cerebrium run <file>[::func]` | `--data '{"k":"v"}'`, `-r`/`--region`, and any `--key value` pair is passed through to the function. Runs in the cloud, not locally. |
 
@@ -64,13 +64,17 @@ cerebrium run script.py::process --region us-east-1
 cerebrium deploy -y --disable-build-logs
 ```
 
+Build logs stream from `cerebrium deploy` itself and nowhere else. There is no `builds` command,
+and `--detach` or `--disable-build-logs` gives that stream up, so a failed build then has to be
+diagnosed by redeploying without them.
+
 ## Inspect
 
 | Command | Notes |
 | --- | --- |
 | `cerebrium apps list` | All apps and their state. |
 | `cerebrium apps get APP_ID` | The config actually in effect. |
-| `cerebrium logs APP_NAME` | Follows by default. `--no-follow`, `--since 30m` (`w\|d\|h\|m\|s` or `YYYY-MM-DD HH:mm:ss`). |
+| `cerebrium logs APP_NAME` | **Runtime logs only.** Follows by default. `--no-follow`, `--since 30m` (`w\|d\|h\|m\|s` or `YYYY-MM-DD HH:mm:ss`). |
 | `cerebrium containers list APP_NAME` | Per-container state. |
 | `cerebrium runs list APP_NAME` | Recent invocations. |
 | `cerebrium status` | Platform status. |

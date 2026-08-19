@@ -19,11 +19,13 @@ metadata:
 1. `cerebrium init my-app` writes `main.py` and `cerebrium.toml`.
 2. Write a function in `main.py` that takes and returns JSON-serialisable values. Everything at
    module scope runs once per replica at startup: load models there, not inside the function.
-3. Set the config (see **cerebrium-config**). Do not skip `disable_auth` and `max_replicas`.
+3. Set the config (see **cerebrium-config**). Do not skip `disable_auth` and `max_replicas`, and
+   remember that a key left out of the file is reset to its default on every deploy.
 4. `cerebrium run main.py::run --prompt "test"` executes remotely on the configured hardware.
    This bills compute. It is not a local emulator.
 5. `cerebrium deploy` builds the image, uploads the code, starts the app, and prints the endpoint.
-6. `cerebrium logs APP_NAME` for build and runtime output (see **cerebrium-troubleshoot**).
+6. Build output streams from `cerebrium deploy` itself. Once the app is running,
+   `cerebrium logs APP_NAME` shows runtime logs (see **cerebrium-troubleshoot**).
 
 Useful deploy flags:
 
