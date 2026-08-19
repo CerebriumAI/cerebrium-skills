@@ -11,7 +11,7 @@
     {
       "name": "cerebrium",
       "displayName": "Cerebrium (Official)",
-      "description": "Router plus lanes for Cerebrium: the CLI surface, cerebrium.toml authoring, hardware and region selection, the deploy and invoke loop, and terminal-only troubleshooting.",
+      "description": "Router plus lanes for Cerebrium (CLI surface, cerebrium.toml, hardware and regions, deploy and invoke, terminal-only troubleshooting), bundling the read-only Cerebrium docs MCP.",
       "source": "./",
       "category": "deployment",
       "skills": [

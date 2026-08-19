@@ -1,6 +1,6 @@
 {
   "name": "cerebrium",
-  "description": "Deploy and operate real-time AI workloads on Cerebrium's serverless GPU and CPU platform: REST, streaming, WebSocket and async endpoints, with hardware selection, autoscaling, cold-start tuning and per-second billing.",
+  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints) with verified cerebrium.toml, hardware, autoscaling and troubleshooting guidance.",
   "version": "0.1.0",
   "author": {
     "name": "Cerebrium",

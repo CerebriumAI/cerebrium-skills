@@ -42,7 +42,8 @@ is the gate. CI runs both plus a link check.
 
 ## Releasing
 
-Bump `version.txt`, the `version` in `.claude-plugin/marketplace.json` and
-`.claude-plugin/plugin.json`, and the `metadata.version` of any changed skill,
-then tag. Directory listings pin a `ref` or `sha`, so an untagged change does not reach
-installed users.
+Bump the `version` in `.claude-plugin/marketplace.json` and `.claude-plugin/plugin.json`, the
+`metadata.version` of any changed skill, and `server.json` if the docs MCP entry changed, then
+tag `vX.Y.Z`. Directory listings pin a `ref` or `sha`, so an untagged change does not reach
+installed users. The Claude plugin directory mirrors GitHub automatically after first
+publication, so no re-submission is needed for updates.
