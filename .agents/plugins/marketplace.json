@@ -1,0 +1,20 @@
+{
+  "name": "cerebrium",
+  "interface": {
+    "displayName": "Cerebrium (Official)"
+  },
+  "plugins": [
+    {
+      "name": "cerebrium",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Infrastructure"
+    }
+  ]
+}
