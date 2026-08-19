@@ -11,16 +11,11 @@
     {
       "name": "cerebrium",
       "displayName": "Cerebrium (Official)",
-      "description": "Router plus lanes for Cerebrium (CLI surface, cerebrium.toml, hardware and regions, deploy and invoke, terminal-only troubleshooting), bundling the read-only Cerebrium docs MCP.",
+      "description": "One Cerebrium skill (workflow, rules, endpoint shapes) with on-demand references for the CLI surface, cerebrium.toml, hardware and regions, and troubleshooting, bundling the read-only Cerebrium docs MCP.",
       "source": "./",
       "category": "deployment",
       "skills": [
-        "./skills/cerebrium",
-        "./skills/cerebrium-cli",
-        "./skills/cerebrium-config",
-        "./skills/cerebrium-hardware",
-        "./skills/cerebrium-deploy",
-        "./skills/cerebrium-troubleshoot"
+        "./skills/cerebrium"
       ]
     }
   ]

@@ -50,18 +50,19 @@ In CI, skip `login` and set `CEREBRIUM_SERVICE_ACCOUNT_TOKEN` instead.
 
 ## What is in here
 
-| Skill | Lane |
-| --- | --- |
-| `cerebrium` | Router and entry point. Reads the task and hands it to the right lane. Also carries the zero-to-deployed path and the safety rules. |
-| `cerebrium-cli` | The full command surface: arguments, flags, global flags, non-interactive auth, and which commands mutate live infrastructure. |
-| `cerebrium-config` | `cerebrium.toml`: every section, the value the API applies when a key is omitted, accepted ranges, what forces a rebuild. |
-| `cerebrium-hardware` | The 13 accepted `compute` identifiers, per-GPU and per-plan limits, preference lists, per-region availability, spot versus on-demand, persistent storage. |
-| `cerebrium-deploy` | Deploy loop and flags, endpoint URL and auth, REST/SSE/WebSocket/async shapes, secrets and automatic env vars, non-interactive CI/CD. |
-| `cerebrium-troubleshoot` | Log and container inspection, a symptom-to-cause table, the cold-start playbook. |
+One skill, structured for progressive disclosure: agents load the ~120-line core
+(`skills/cerebrium/SKILL.md`, the workflow, the safety rules, the endpoint shapes) when a
+Cerebrium task appears, and pull in a reference file only when the task needs it.
 
-Skills load progressively: an agent sees only the names and descriptions until a task matches,
-then reads one lane. The docs MCP (`.mcp.json`, hosted at `https://cerebrium.ai/docs/mcp`) is
-read-only: documentation search and filesystem, no account access, no key needed.
+| Reference | Loaded when the task involves |
+| --- | --- |
+| `references/cli.md` | Any `cerebrium` command: full surface, flags, non-interactive auth, CI/CD, which commands cost money. |
+| `references/config.md` | `cerebrium.toml`: every key, the default the API applies when it is omitted, accepted ranges, rebuild triggers. |
+| `references/hardware.md` | The 13 accepted `compute` identifiers, per-GPU and per-plan limits, preference lists, regional availability, storage. |
+| `references/troubleshooting.md` | Failed builds, queueing, reverted settings, the cold-start playbook. |
+
+The docs MCP (`.mcp.json`, hosted at `https://cerebrium.ai/docs/mcp`) is read-only:
+documentation search and filesystem, no account access, no key needed.
 
 ## Try it
 

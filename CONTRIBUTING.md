@@ -19,7 +19,7 @@ Where to check:
 ## Local checks
 
 ```bash
-npx -y skills-ref validate skills/<name>   # exit code is the result, not the console output
+npx -y skills-ref validate skills/cerebrium   # exit code is the result, not the console output
 claude plugin validate .                   # manifest only, it does not read SKILL.md
 ```
 
@@ -28,11 +28,10 @@ is the gate. CI runs both plus a link check.
 
 ## Writing a skill
 
-- One lane per skill, and route from `skills/cerebrium/SKILL.md` rather than growing a monolith.
-- Skills live at the repository root under `skills/`. The plugin manifests wrap that same set, they
-  do not hold a second copy.
-- Keep `SKILL.md` under 500 lines. Long reference material goes in `references/` alongside it and
-  is loaded on demand.
+- One skill. `skills/cerebrium/SKILL.md` is the always-loaded core: workflow, rules, endpoint
+  shapes. Lookup material (tables, enums, flag lists) lives in `skills/cerebrium/references/` and
+  is loaded on demand. Add a new reference file rather than growing the core past ~200 lines, and
+  add a new skill only for a genuinely separate tool or job, not another chapter of this one.
 - The `description` is the only thing an agent sees before deciding to load the skill. Say what
   the skill does *and* when to reach for it.
 - `name` must be lowercase, hyphen-separated, and identical to the directory name.

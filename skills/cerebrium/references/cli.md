@@ -1,17 +1,4 @@
----
-name: cerebrium-cli
-description: >-
-  The complete Cerebrium CLI surface: every command, its arguments and its flags, plus the
-  global flags, non-interactive authentication, and which commands mutate live infrastructure
-  or start billable compute. Use whenever running a cerebrium command, checking whether a
-  command exists, or driving Cerebrium from a script or CI job.
-license: MIT
-metadata:
-  author: cerebrium
-  version: "0.1.0"
----
-
-# Cerebrium CLI
+# CLI reference
 
 Installed with `pip install cerebrium` (a thin wrapper that fetches the Go binary on first use),
 `brew tap cerebriumai/tap && brew install cerebrium`, or a release archive from
@@ -121,3 +108,22 @@ cerebrium config set <key> <value>
 cerebrium config edit
 cerebrium config telemetry disable   # or enable
 ```
+
+## CI/CD (non-interactive)
+
+`cerebrium login` needs a browser and fails in CI. Use a service account key from the API Keys
+page of the dashboard instead, and pass it by environment variable:
+
+```yaml
+env:
+  CEREBRIUM_SERVICE_ACCOUNT_TOKEN: ${{ secrets.CEREBRIUM_SERVICE_ACCOUNT_TOKEN }}
+  CEREBRIUM_PROJECT_ID: ${{ secrets.CEREBRIUM_PROJECT_ID }}
+steps:
+  - run: pip install cerebrium
+  - run: cerebrium projects set $CEREBRIUM_PROJECT_ID
+  - run: cerebrium deploy -y --disable-build-logs
+```
+
+`--service-account-token <token>` works as a flag on any command if an environment variable is
+awkward. Keep separate projects for development and production so a pipeline cannot overwrite a
+live app.

@@ -1,18 +1,3 @@
----
-name: cerebrium-hardware
-description: >-
-  Choose Cerebrium compute: which GPU identifier to put in cerebrium.toml, VRAM and plan tier per
-  accelerator, the CPU and memory ceilings the API enforces per GPU, GPU preference lists and the
-  family rule, which regions carry which accelerators, provider pinning, spot versus on-demand,
-  and where model weights should live. Use when selecting or changing hardware, when a deploy is
-  rejected for an unknown compute type or an invalid CPU, memory or GPU count, or when an app
-  cannot find capacity in a region.
-license: MIT
-metadata:
-  author: cerebrium
-  version: "0.1.0"
----
-
 # Hardware, regions and storage
 
 ## Accepted `compute` values

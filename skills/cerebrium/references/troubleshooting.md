@@ -1,17 +1,3 @@
----
-name: cerebrium-troubleshoot
-description: >-
-  Diagnose a Cerebrium app from the terminal: read runtime logs, inspect containers, list runs,
-  check the config actually in effect, and work through the usual failures (build timeouts, a
-  custom runtime that never becomes ready, requests that queue, 401s, no replicas in a pinned
-  region, settings that revert after a deploy, slow cold starts). Use when a deploy fails, an app
-  returns errors, latency is bad, or an app is not behaving the way its cerebrium.toml says.
-license: MIT
-metadata:
-  author: cerebrium
-  version: "0.1.0"
----
-
 # Diagnosing a Cerebrium app
 
 Everything here is terminal-only. Do not send the user to the dashboard for logs, metrics or
@@ -43,11 +29,11 @@ runs. If a build failed and the output is gone, redeploy without `--detach` and 
 | --- | --- | --- |
 | Build fails partway through apt or pip | A dependency, not the platform | Read the failing command in the deploy output, pin the version, batch apt changes (they force a full rebuild). |
 | Build times out during model load | `deployment_initialization_timeout` (default 600s) | Raise it, ceiling 830. Better: move weights to `/persistent-storage`. |
-| A setting reverted after a deploy | The key was absent from `cerebrium.toml`, so the deploy reset it | Put every value that matters in the file. See **cerebrium-config**. |
-| Deploy rejected for CPU, memory or GPU count | Per-type limits, or the plan's ceiling, whichever is stricter | Check both tables in **cerebrium-hardware**. |
+| A setting reverted after a deploy | The key was absent from `cerebrium.toml`, so the deploy reset it | Put every value that matters in the file. See `references/config.md`. |
+| Deploy rejected for CPU, memory or GPU count | Per-type limits, or the plan's ceiling, whichever is stricter | Check both tables in `references/hardware.md`. |
 | Custom runtime deploys but never serves traffic | `port` does not match the port inside `entrypoint`, or `readycheck_endpoint` is not answering 200 | Align them. An unready instance is silently removed from routing. |
 | App is up, requests queue or time out | `max_replicas` is 1 by default | Raise `max_replicas`, and check `replica_concurrency` (1 per replica on an accelerator). |
-| Deployed, but no replica ever starts | The pinned `region` does not carry the requested `compute`, or there is no capacity | Widen `compute` into a preference list, or drop the `region` pin. See **cerebrium-hardware**. |
+| Deployed, but no replica ever starts | The pinned `region` does not carry the requested `compute`, or there is no capacity | Widen `compute` into a preference list, or drop the `region` pin. See `references/hardware.md`. |
 | Scaling never triggers on CPU or memory | `cpu_utilization` and `memory_utilization` need `min_replicas >= 1` | Set a floor, or scale on concurrency instead. |
 | 401 or 403 from the endpoint | `disable_auth = false` and no or wrong `Authorization: Bearer` | Send a JWT from API Keys, or a service account token. |
 | Anyone on the internet can call it | `disable_auth = true`, which is what `cerebrium init` scaffolds | Set `false` and redeploy. |
@@ -74,4 +60,4 @@ Then, in the order the platform documentation recommends:
 Reference: `https://cerebrium.ai/docs/performance/faster-cold-starts` and
 `https://cerebrium.ai/docs/performance/checkpointing`.
 
-The full command surface, including the flags for each command, is in **cerebrium-cli**.
+The full command surface, including the flags for each command, is in `references/cli.md`.

@@ -1,18 +1,3 @@
----
-name: cerebrium-config
-description: >-
-  Write, review or fix a cerebrium.toml. Covers every section (deployment, runtime.custom,
-  hardware, scaling, dependencies, experimental), the value the Cerebrium API applies when a key
-  is omitted, the accepted range for each field, the rules that reject a deploy, and which edits
-  force a full image rebuild. Use when authoring or changing Cerebrium configuration, when a
-  deploy is rejected as invalid, or when an app scales, authenticates or sizes itself differently
-  than expected.
-license: MIT
-metadata:
-  author: cerebrium
-  version: "0.1.0"
----
-
 # cerebrium.toml
 
 One file per app, read by `cerebrium deploy` and `cerebrium run`.
@@ -65,12 +50,12 @@ Omit the section to use the default Cortex runtime.
 
 | Key | Applied when omitted | Accepted |
 | --- | --- | --- |
-| `cpu` | `2.0` | Depends on the compute type and the plan. See **cerebrium-hardware**. |
+| `cpu` | `2.0` | Depends on the compute type and the plan. See `references/hardware.md`. |
 | `memory` | `4.0` | GB of host RAM, not VRAM. Same limits apply. |
 | `compute` | `"CPU"` | One identifier, or a preference-ordered list of up to 5 from the same family. |
 | `gpu_count` | `1` when `compute` is an accelerator, `0` for `CPU` | Per-type maximum, capped again by the plan. |
 | `provider` | platform picks | `aws`, `crusoe` or `nebius`. |
-| `region` | platform picks | See **cerebrium-hardware**. |
+| `region` | platform picks | See `references/hardware.md`. |
 
 ## `[cerebrium.scaling]`
 
@@ -123,7 +108,7 @@ checkpointing = true
 
 Turns on memory and GPU checkpointing (beta, availability varies by account). The container also
 has to POST to `http://169.254.169.253:8234/checkpoint` once initialisation is done, so it is a
-config change plus a code change. See **cerebrium-troubleshoot** for where it sits in the
+config change plus a code change. See `references/troubleshooting.md` for where it sits in the
 cold-start order.
 
 ## What forces a full rebuild
@@ -168,6 +153,14 @@ compute_tier = "protected"
 vllm = "latest"
 ```
 
+## Private base images
+
+Log in to the registry before deploying an app that pulls one:
+
+```bash
+docker login -u your-dockerhub-username     # not the bare `docker login` OAuth flow
+```
+
 ## Checklist before deploying
 
 - [ ] Every value that matters is in the file, including ones set by a previous `apps scale`
@@ -175,7 +168,7 @@ vllm = "latest"
 - [ ] `max_replicas` matches the traffic you expect, not the default 1
 - [ ] `replica_concurrency` matches the workload (1 for one-request-per-GPU inference)
 - [ ] `compute` uses an accepted identifier, and `cpu`, `memory` and `gpu_count` are inside that
-      type's limits and the plan's (**cerebrium-hardware**)
+      type's limits and the plan's (`references/hardware.md`)
 - [ ] weights load from `/persistent-storage`, not baked into the image or in `include`
 - [ ] custom runtime: the port in `entrypoint` equals `port`
 - [ ] secrets are added with `cerebrium secrets add`, never hardcoded
