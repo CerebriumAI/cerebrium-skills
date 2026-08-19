@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.cerebriumai/docs",
+  "title": "Cerebrium Docs",
+  "description": "Search and read the Cerebrium documentation: serverless GPU/CPU deployment, cerebrium.toml reference, hardware, scaling, endpoints and troubleshooting. Read-only.",
+  "repository": {
+    "url": "https://github.com/CerebriumAI/cerebrium-skills",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "websiteUrl": "https://cerebrium.ai/docs",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://cerebrium.ai/docs/mcp"
+    }
+  ]
+}

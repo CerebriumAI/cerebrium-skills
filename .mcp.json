@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cerebrium-docs": {
+      "type": "http",
+      "url": "https://cerebrium.ai/docs/mcp"
+    }
+  }
+}

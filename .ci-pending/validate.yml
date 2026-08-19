@@ -1,0 +1,77 @@
+name: validate
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Validate every skill against the Agent Skills spec
+        run: |
+          set -euo pipefail
+          status=0
+          for skill in skills/*/; do
+            echo "::group::${skill}"
+            npx -y skills-ref validate "${skill}" || status=1
+            echo "::endgroup::"
+          done
+          exit $status
+
+      - name: Manifests parse and reference real paths
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, sys
+
+          fail = []
+          for manifest in [".claude-plugin/marketplace.json",
+                           ".agents/plugins/marketplace.json"]:
+              data = json.loads(pathlib.Path(manifest).read_text())
+              for plugin in data["plugins"]:
+                  source = plugin["source"]
+                  root = pathlib.Path(source if isinstance(source, str) else source["path"])
+                  if not (root / ".claude-plugin" / "plugin.json").is_file():
+                      fail.append(f"{manifest}: {root} has no plugin.json")
+                  for skill in plugin.get("skills", []):
+                      if not (root / skill / "SKILL.md").is_file():
+                          fail.append(f"{manifest}: missing {root / skill}/SKILL.md")
+
+          for skill in pathlib.Path("skills").glob("*/SKILL.md"):
+              name = None
+              for line in skill.read_text().splitlines()[1:]:
+                  if line.startswith("name:"):
+                      name = line.split(":", 1)[1].strip()
+                      break
+                  if line.startswith("---"):
+                      break
+              if name != skill.parent.name:
+                  fail.append(f"{skill}: frontmatter name {name!r} != directory {skill.parent.name!r}")
+
+          declared = {s for m in [".claude-plugin/marketplace.json"]
+                        for p in json.loads(pathlib.Path(m).read_text())["plugins"]
+                        for s in p.get("skills", [])}
+          on_disk = {"./skills/" + p.name for p in pathlib.Path("skills").iterdir() if p.is_dir()}
+          if declared != on_disk:
+              fail.append(f"marketplace skills list {sorted(declared)} != on disk {sorted(on_disk)}")
+
+          print("\n".join(fail) if fail else "manifests OK")
+          sys.exit(1 if fail else 0)
+          PY
+
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check every documentation link still resolves
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress --accept 200,206 --exclude-path node_modules "**/*.md"
+          fail: true
