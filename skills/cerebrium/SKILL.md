@@ -49,7 +49,7 @@ This file carries the workflow and the rules. Load the reference that matches th
 ## First run: check state before acting
 
 ```bash
-cerebrium --version                 # installed? if not: pip install cerebrium
+cerebrium version                   # installed? if not: pip install cerebrium
 cerebrium projects current          # authenticated, and pointed at the intended project?
 ```
 
