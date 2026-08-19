@@ -24,7 +24,9 @@ claude plugin validate .                   # manifest only, it does not read SKI
 ```
 
 `claude plugin validate` exits 0 on a skill whose frontmatter breaks the spec, so `skills-ref`
-is the gate. CI runs both plus a link check.
+is the gate. CI never runs `claude plugin validate`. It runs `npx -y skills-ref validate` on
+every skill and reads the exit status, checks manifest and frontmatter consistency, and runs a
+lychee link check.
 
 ## Writing a skill
 

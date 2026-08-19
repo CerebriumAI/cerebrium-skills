@@ -39,12 +39,16 @@ github.com/CerebriumAI/cerebrium-skills: use `npx skills add` and `npx add-mcp`,
 global and auto-confirmed for all agents (-g -y).
 ```
 
-Then authenticate the CLI once:
+Then create an account and authenticate the CLI once:
 
 ```bash
+# create an account at https://dashboard.cerebrium.ai (also where API keys are created)
 pip install cerebrium   # or: brew tap cerebriumai/tap && brew install cerebrium
 cerebrium login
 ```
+
+Compute is billed per second: see [pricing](https://www.cerebrium.ai/pricing) for current rates
+and any starting credit.
 
 In CI, skip `login` and set `CEREBRIUM_SERVICE_ACCOUNT_TOKEN` instead.
 

@@ -59,25 +59,30 @@ cerebrium projects current          # authenticated, and pointed at the intended
 
 ## Zero to a deployed endpoint
 
+Starting with no account: create one at `https://dashboard.cerebrium.ai`. The dashboard is also
+where API keys and authentication tokens are created. Compute is billed per second; current rates
+and any starting credit are at `https://www.cerebrium.ai/pricing`.
+
 ```bash
 pip install cerebrium              # thin wrapper that fetches the Go binary on first use
-cerebrium login                    # interactive only
+cerebrium login                    # interactive only, needs an account
 cerebrium init my-app && cd my-app
 cerebrium deploy
 ```
 
 The full loop:
 
-1. `cerebrium init my-app` writes `main.py` and `cerebrium.toml`.
-2. Write a function in `main.py` that takes and returns JSON-serialisable values. Everything at
+1. Create an account at `https://dashboard.cerebrium.ai`, then `cerebrium login`.
+2. `cerebrium init my-app` writes `main.py` and `cerebrium.toml`.
+3. Write a function in `main.py` that takes and returns JSON-serialisable values. Everything at
    module scope runs once per replica at startup: load models there, not inside the function.
-3. Set the config ([references/config.md](references/config.md)). Do not skip `disable_auth`
+4. Set the config ([references/config.md](references/config.md)). Do not skip `disable_auth`
    (the scaffold ships `true`, which makes the endpoint public) or `max_replicas` (default 1,
    the most common cause of queueing).
-4. `cerebrium run main.py::run --prompt "test"` executes remotely on the configured hardware.
-5. `cerebrium deploy` builds, uploads, starts the app, and prints the endpoint. Build output
+5. `cerebrium run main.py::run --prompt "test"` executes remotely on the configured hardware.
+6. `cerebrium deploy` builds, uploads, starts the app, and prints the endpoint. Build output
    streams from this command and nowhere else.
-6. Once running, `cerebrium logs APP_NAME` shows runtime logs.
+7. Once running, `cerebrium logs APP_NAME` shows runtime logs.
 
 ## Calling the endpoint
 
