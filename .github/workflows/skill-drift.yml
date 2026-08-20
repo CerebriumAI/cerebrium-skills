@@ -1,0 +1,125 @@
+name: skill-drift
+
+# Compares what the Cerebrium CLI can actually do against what the skill claims
+# it can do, and says so when the two diverge.
+#
+# The comparison is always against the latest RELEASED tag of
+# CerebriumAI/cerebrium, never its default branch. A flag can exist on the
+# default branch and be in no release yet, and an agent that follows the skill
+# runs the released binary. Pointing this at the default branch turns those
+# cases into a clean pass, which is worse than not checking at all.
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Resolve the latest released CLI tag
+        id: cli
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=$(gh api repos/CerebriumAI/cerebrium/releases/latest --jq .tag_name)
+          [ -n "$tag" ] || { echo "no released tag found"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "comparing against CLI $tag"
+
+      - name: Check out the CLI at that tag
+        env:
+          TAG: ${{ steps.cli.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 --branch "$TAG" \
+            https://github.com/CerebriumAI/cerebrium.git cli
+
+      - name: Extract the CLI surface
+        run: |
+          set -euo pipefail
+          # surfacedump lives inside the module so it can import internal/... .
+          # cobra and pflag are already required there, so go.mod and go.sum are
+          # untouched and nothing is ever pushed back to that repository.
+          mkdir -p cli/skilldrift/surfacedump
+          cp tools/surfacedump/main.go cli/skilldrift/surfacedump/main.go
+          (cd cli && go run ./skilldrift/surfacedump) > surface.json
+          dirty=$(git -C cli status --porcelain | grep -v '^?? skilldrift/$' || true)
+          if [ -n "$dirty" ]; then
+            echo "the CLI checkout was modified, which must never happen:"
+            echo "$dirty"
+            exit 1
+          fi
+
+      - name: Compare the CLI surface against the skill
+        id: drift
+        env:
+          TAG: ${{ steps.cli.outputs.tag }}
+        run: |
+          set -uo pipefail
+          python3 tools/check_drift.py \
+            --surface surface.json \
+            --skills skills \
+            --ref "$TAG" | tee drift-report.txt
+          echo "exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+
+      - name: Fail the check when a pull request drifts
+        if: github.event_name == 'pull_request'
+        env:
+          TAG: ${{ steps.cli.outputs.tag }}
+          DRIFT_EXIT: ${{ steps.drift.outputs.exit }}
+        run: |
+          set -euo pipefail
+          [ "$DRIFT_EXIT" = "0" ] || {
+            echo "::error::the skill and CLI $TAG disagree, see the report above"
+            exit 1
+          }
+
+      # On a schedule the point is to raise the divergence for a human to
+      # resolve, so the run opens a pull request whose diff is the report and
+      # whose body is the summary. A reviewer edits the skill on the same
+      # branch and drops the report before merging.
+      - name: Open a pull request for the drift
+        if: github.event_name != 'pull_request' && steps.drift.outputs.exit != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.cli.outputs.tag }}
+        run: |
+          set -euo pipefail
+          branch="skill-drift/${TAG}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          {
+            echo "# Skill drift against CLI ${TAG}"
+            echo
+            echo "Written by the skill-drift workflow. Edit the skill on this branch and delete"
+            echo "this file before merging."
+            echo
+            echo '```'
+            cat drift-report.txt
+            echo '```'
+          } > tools/drift-report.md
+          git add tools/drift-report.md
+          git commit -m "Report skill drift against CLI ${TAG}"
+          git push --force origin "$branch"
+          if [ -z "$(gh pr list --head "$branch" --state open --json number --jq '.[].number')" ]; then
+            gh pr create --head "$branch" \
+              --title "Skill drift against CLI ${TAG}" \
+              --body-file tools/drift-report.md
+          fi

@@ -8,9 +8,11 @@ Two rules to internalise before editing one:
    record. If a previous deploy or `cerebrium apps scale` set `max_replicas = 20` and the TOML
    you deploy has no `max_replicas`, the app goes back to 1. Keep every value that matters in the
    file.
-2. **A key the parser does not recognise is ignored in silence.** A misspelled `max_replica` does
-   not fail the deploy, it just does nothing. Check spelling against the tables below rather than
-   trusting a successful deploy. A TOML that does not parse at all does fail the deploy.
+2. **A key the CLI does not recognise is not rejected locally.** A misspelled `max_replica` does
+   not fail the deploy in the CLI, it just does nothing there. The whole file is uploaded
+   verbatim, so the backend sees the key too and is free to reject it. Check spelling against the
+   tables below rather than trusting a successful deploy. A TOML that does not parse at all does
+   fail the deploy.
 
 Defaults below are what the API applies when the key is absent. Where a published table
 disagrees, prefer these, and set anything that matters explicitly.
@@ -33,6 +35,15 @@ disagrees, prefer these, and set anything that matters explicitly.
 `cerebrium init` scaffolds `disable_auth = true`. That is a convenience for a first curl, not a
 production default. Treat flipping it to `false` as part of the first real deploy.
 
+## `[cerebrium.runtime]`
+
+| Key | Applied when omitted | Notes |
+| --- | --- | --- |
+| `container_runtime` | platform default | `"v1"` is runc, `"v2"` is gvisor. Any other value fails the deploy locally. |
+
+The sub-tables in the next two sections sit under the same heading and can be set alongside
+`container_runtime`.
+
 ## `[cerebrium.runtime.custom]`
 
 Only for a custom web server (FastAPI, ASGI, WebSockets, custom batching) or a Dockerfile build.
@@ -45,6 +56,23 @@ Omit the section to use the default Cortex runtime.
 | `healthcheck_endpoint` | `""` (TCP ping) | Non-200 marks the instance unhealthy and restarts it. |
 | `readycheck_endpoint` | `""` (TCP ping) | Non-200 removes the instance from routing. |
 | `dockerfile_path` | unset | Build from a Dockerfile instead. The path must exist locally, and the image then owns its own dependencies and Python version. |
+
+## `[cerebrium.runtime.deepgram]` and `[cerebrium.runtime.rime]`
+
+Partner service runtimes. The table name is the partner, and an app uses one of them or neither.
+Omit both unless you are deploying that partner's image.
+
+| Key | Applied when omitted | Notes |
+| --- | --- | --- |
+| `port` | partner default | Port the partner service listens on. |
+| `model_name` | partner default | Partner model identifier, for example `arcana` or `mist`. |
+| `language` | partner default | Language code, for example `en`. |
+
+```toml
+[cerebrium.runtime.deepgram]
+model_name = "arcana"
+language = "en"
+```
 
 ## `[cerebrium.hardware]`
 

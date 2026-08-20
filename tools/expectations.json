@@ -1,0 +1,16 @@
+{
+  "$comment": [
+    "Known, deliberate exceptions for tools/check_drift.py. This is the only file here",
+    "a human maintains. Every entry needs a reason. An entry that exists only to quieten",
+    "the checker is a bug in the checker.",
+    "",
+    "ignore_missing_commands     command paths the skill deliberately does not document",
+    "ignore_missing_flags        {command, flag} the skill deliberately does not document",
+    "ignore_invented_flags       {command, flag} the skill names that is not a real flag",
+    "ignore_missing_config_keys  {section, key} the skill deliberately does not document"
+  ],
+  "ignore_missing_commands": [],
+  "ignore_missing_flags": [],
+  "ignore_invented_flags": [],
+  "ignore_missing_config_keys": []
+}
