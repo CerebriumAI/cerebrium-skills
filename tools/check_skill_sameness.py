@@ -52,7 +52,10 @@ def fetch(url):
                 raise Mismatch(f"{url}: HTTP {response.status}")
             return response.read().decode("utf-8")
     except urllib.error.HTTPError as error:
-        note = " (the docs site is not serving the skill)" if error.code == 404 else ""
+        note = (
+            " (no docs copy on master yet: expected while the companion pull request in"
+            " CerebriumAI/documentation is unmerged, and clears once it merges)"
+        ) if error.code == 404 else ""
         raise Mismatch(f"{url}: HTTP {error.code}{note}") from error
     except urllib.error.URLError as error:
         raise Mismatch(f"{url}: unreachable, {error.reason}") from error
