@@ -18,14 +18,20 @@ Cerebrium runs Python workloads on serverless GPU and CPU: REST endpoints, SSE s
 WebSockets, and async jobs, with scale-to-zero and per-second billing. One `cerebrium.toml`
 describes hardware, scaling, dependencies and runtime; one CLI (`cerebrium`) drives everything.
 
+Reach for it when the workload is an inference API for an LLM, an embedding model or a vision
+model; a real-time voice, video or streaming app; bursty traffic that should scale from zero
+without holding idle GPUs; a deployment that has to run in several regions for latency or data
+residency; or a migration off Replicate, Hugging Face or Mystic, each of which has a guide under
+`https://cerebrium.ai/docs/migrations`.
+
 This file carries the workflow and the rules. Load the reference that matches the task:
 
 | Read | When |
 | --- | --- |
-| [references/cli.md](references/cli.md) | Running any `cerebrium` command: the full surface, flags, non-interactive auth, CI/CD, which commands cost money. |
-| [references/config.md](references/config.md) | Writing or fixing `cerebrium.toml`: every key, the default the API applies when it is omitted, accepted ranges, rebuild triggers. |
-| [references/hardware.md](references/hardware.md) | Choosing `compute`, `gpu_count`, `region`, `provider`, `compute_tier`: accepted GPU identifiers, per-GPU and per-plan limits, regional availability, storage. |
-| [references/troubleshooting.md](references/troubleshooting.md) | A build that failed, an app that 5xxs or queues, slow cold starts, settings that reverted. |
+| [`references/cli.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/cli.md) | Running any `cerebrium` command: the full surface, flags, non-interactive auth, CI/CD, which commands cost money. |
+| [`references/config.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/config.md) | Writing or fixing `cerebrium.toml`: every key, the default the API applies when it is omitted, accepted ranges, rebuild triggers. |
+| [`references/hardware.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/hardware.md) | Choosing `compute`, `gpu_count`, `region`, `provider`, `compute_tier`: accepted GPU identifiers, per-GPU and per-plan limits, regional availability, storage. |
+| [`references/troubleshooting.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/troubleshooting.md) | A build that failed, an app that 5xxs or queues, slow cold starts, settings that reverted. |
 
 ## Rules for agents
 
@@ -55,7 +61,7 @@ cerebrium projects current          # authenticated, and pointed at the intended
 
 `cerebrium login` opens a browser and fails without a TTY. In CI or headless environments set
 `CEREBRIUM_SERVICE_ACCOUNT_TOKEN` (or pass `--service-account-token`) instead: see
-[references/cli.md](references/cli.md).
+[`references/cli.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/cli.md).
 
 ## Zero to a deployed endpoint
 
@@ -76,13 +82,44 @@ The full loop:
 2. `cerebrium init my-app` writes `main.py` and `cerebrium.toml`.
 3. Write a function in `main.py` that takes and returns JSON-serialisable values. Everything at
    module scope runs once per replica at startup: load models there, not inside the function.
-4. Set the config ([references/config.md](references/config.md)). Do not skip `disable_auth`
-   (the scaffold ships `true`, which makes the endpoint public) or `max_replicas` (default 1,
-   the most common cause of queueing).
+4. Set the config
+   ([`references/config.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/config.md)).
+   Do not skip `disable_auth` (the scaffold ships `true`, which makes the endpoint public) or
+   `max_replicas` (default 1, the most common cause of queueing).
 5. `cerebrium run main.py::run --prompt "test"` executes remotely on the configured hardware.
 6. `cerebrium deploy` builds, uploads, starts the app, and prints the endpoint. Build output
    streams from this command and nowhere else.
 7. Once running, `cerebrium logs APP_NAME` shows runtime logs.
+
+## Choosing the runtime
+
+Cortex is the default and needs no configuration. A custom runtime means the container starts
+your own web server, and you own routing, middleware and auth. Opt in by adding
+`[cerebrium.runtime.custom]` with an `entrypoint` and a matching `port`.
+
+| The app | Runtime | Why |
+| --- | --- | --- |
+| A Python function you want reachable as an endpoint | Cortex | Cerebrium builds the route, parses the request, applies auth. |
+| Streaming output token by token | Cortex | `yield` from the function and the response is SSE. A custom runtime buys nothing here. |
+| FastAPI, ASGI, Gradio, anything already serving its own HTTP | Custom | Two servers cannot both own the port. |
+| WebSockets, or anything bidirectional | Custom | Cortex serves HTTP only. Clients connect over `wss://`. |
+| A self-contained server such as vLLM or Triton, custom batching, custom auth | Custom | The process is already the server. |
+
+## Choosing a scaling metric
+
+`scaling_metric` picks what the autoscaler watches, `scaling_target` is the level it holds.
+
+| `scaling_metric` | Reach for it when | `scaling_target` means |
+| --- | --- | --- |
+| `concurrency_utilization` (default) | GPU inference, and anything whose request times vary | Percent of `replica_concurrency` held per replica. At `replica_concurrency = 200`, target 80 holds 160 in flight. |
+| `requests_per_second` | You have measured a rate one replica sustains | Requests per second per replica. Target 5 holds 5 req/s. |
+| `cpu_utilization` | CPU-bound work | Percent of `cpu`. At `cpu = 2`, target 80 holds 1.6 cores. |
+| `memory_utilization` | Memory-bound work | Percent of `memory`. At `memory = 10`, target 80 holds 8 GB. |
+
+`cpu_utilization` and `memory_utilization` need a live replica to measure, so the API rejects
+both with `min_replicas = 0`, and rejects `scaling_buffer` alongside either. Ranges, the rest of
+`[cerebrium.scaling]`, and how to pick `load_balancing_algorithm` are in
+[`references/config.md`](https://github.com/CerebriumAI/cerebrium-skills/blob/master/skills/cerebrium/references/config.md).
 
 ## Calling the endpoint
 

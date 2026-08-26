@@ -1,0 +1,32 @@
+name: skill-sameness
+
+# `skills/cerebrium/SKILL.md` here is the source of truth for the Cerebrium Agent Skill, and
+# the same document is served at cerebrium.ai/docs/skill.md out of CerebriumAI/documentation.
+# This fails when the two drift apart.
+#
+# It runs on a schedule as well as on pull requests, because a change made in the other
+# repository never triggers this one's CI. Without the schedule the two could sit divergent
+# indefinitely and nothing here would notice.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  schedule:
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sameness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: The checker fails when the two copies differ
+        run: python3 tools/test_check_skill_sameness.py
+
+      - name: This skill matches the copy served on the docs site
+        run: python3 tools/check_skill_sameness.py

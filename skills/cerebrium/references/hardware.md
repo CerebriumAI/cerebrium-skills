@@ -100,6 +100,11 @@ refused at deploy time.
 Omit `region` to let the platform place the app wherever there is capacity. Pin one only for data
 residency or to sit next to a dependency.
 
+`region = "global"` is a third option, and not the same as omitting the key. It runs the app
+across regions with capacity and mounts `/global-persistent-storage` as well, so use it when one
+app has to serve users in several places from one deployment. The file commands reach that volume
+with `--region global`.
+
 ### Accelerators by region
 
 | Region | Available |

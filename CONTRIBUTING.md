@@ -68,3 +68,20 @@ Bump the `version` in `.claude-plugin/marketplace.json` and `.claude-plugin/plug
 tag `vX.Y.Z`. Directory listings pin a `ref` or `sha`, so an untagged change does not reach
 installed users. The Claude plugin directory mirrors GitHub automatically after first
 publication, so no re-submission is needed for updates.
+
+## The docs site serves the same skill
+
+`skills/cerebrium/SKILL.md` is the source of truth for the Cerebrium Agent Skill. The same
+document is served at `cerebrium.ai/docs/skill.md` out of `CerebriumAI/documentation`, because
+two different documents under one name is how this went wrong once already.
+
+`.github/workflows/skill-sameness.yml` runs `tools/check_skill_sameness.py`, which compares the
+body byte for byte plus the frontmatter `description` and `license`. The frontmatter `name` and
+the whole `metadata` block are allowed to differ, since Mintlify needs its own. It fails closed:
+a 404 or an unreachable host is red, never a skip. It runs daily as well as on pull requests,
+because a change in the other repository does not trigger CI here.
+
+So an edit to the skill body is two pull requests, and they have to land together. Open the one
+in `CerebriumAI/documentation` first, or this repository's check stays red until it merges.
+Relative links do not resolve on the docs site, so a link to a reference file is written with
+the relative path as the link text and the absolute GitHub blob URL as the target.

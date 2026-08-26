@@ -98,7 +98,7 @@ language = "en"
 | `cooldown` | `10` | 0 to 3600 seconds | Time at reduced load before scaling down. |
 | `response_grace_period` | `900` | 16 to 43200 seconds | Also the ceiling on an async run, so 12 hours is the maximum. |
 | `evaluation_interval_seconds` | `30` | 6 to 300 | Window metrics are evaluated over. |
-| `load_balancing_algorithm` | `round-robin` | `round-robin`, `first-available`, `min-connections`, `random-choice-2` | `first-available` suits `replica_concurrency = 1` GPU work. |
+| `load_balancing_algorithm` | platform picks by `replica_concurrency` | `round-robin`, `first-available`, `min-connections`, `random-choice-2` | `first-available` at concurrency 3 or below, `round-robin` above. See below. |
 | `compute_tier` | `interruptible` | `interruptible`, `protected` | `protected` is on-demand: higher availability, higher price. |
 | `roll_out_duration_seconds` | `0` | 0 to 21600 | Gradual traffic shift to a new revision. Keep 0 while iterating. |
 
@@ -107,6 +107,18 @@ Two combinations the API rejects outright:
 - `cpu_utilization` or `memory_utilization` with `min_replicas = 0`. These metrics need a running
   replica to measure, so set `min_replicas` to at least 1.
 - `scaling_buffer` with either of those two metrics.
+
+### Picking `load_balancing_algorithm`
+
+Leave it unset unless tail latency is a measured problem. The CLI omits the key entirely when it
+is absent, so the platform chooses, and its choice already matches the common cases.
+
+| Algorithm | Reach for it when | Cost |
+| --- | --- | --- |
+| `first-available` | One request per replica, so GPU inference at `replica_concurrency = 1` | Fills warm replicas first, so load is uneven by design. |
+| `round-robin` | Request times are uniform and you want even wear | Consistent p50, weaker p99 when one request is slow. |
+| `min-connections` | Request times vary a lot, as with LLM generation | Best p90 and p99, more work per routing decision. |
+| `random-choice-2` | Many replicas and high throughput | Constant-time choice that lands close to optimal. |
 
 ## Dependencies
 
@@ -199,4 +211,6 @@ docker login -u your-dockerhub-username     # not the bare `docker login` OAuth 
       type's limits and the plan's (`references/hardware.md`)
 - [ ] weights load from `/persistent-storage`, not baked into the image or in `include`
 - [ ] custom runtime: the port in `entrypoint` equals `port`
+- [ ] custom runtime: `readycheck_endpoint` answers 200 once the app can serve, or is left empty
+      for a TCP ping. An instance that never reports ready is dropped from routing in silence
 - [ ] secrets are added with `cerebrium secrets add`, never hardcoded
