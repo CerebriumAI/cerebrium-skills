@@ -13,8 +13,11 @@ Valid on every command:
 | Flag | Effect |
 | --- | --- |
 | `-v`, `--verbose` | Verbose logging. |
-| `--no-color`, `--no-ansi`, `--disable-animation` | Plain output. Use these when parsing output. |
+| `--no-color`, `--no-ansi`, `--disable-animation` | Plain output, no colour and no animation. |
 | `--service-account-token <token>` | Authenticate without a session. Takes precedence over the environment variable and the stored token. |
+
+When something other than a human reads the output, reach for `-o json` on the commands that
+accept it rather than suppressing colour. Those commands are marked below.
 
 ## Authentication
 
@@ -22,6 +25,7 @@ Valid on every command:
 cerebrium login                       # interactive, opens a browser
 export CEREBRIUM_SERVICE_ACCOUNT_TOKEN=...   # headless and CI, no login needed
 cerebrium save-auth-config ACCESS_TOKEN [REFRESH_TOKEN] [PROJECT_ID]
+cerebrium save-auth-config ACCESS_TOKEN --project-id p-abcd1234   # instead of the positional id
 ```
 
 `login` fails without a TTY by design. In CI, set the environment variable or pass
@@ -30,7 +34,7 @@ cerebrium save-auth-config ACCESS_TOKEN [REFRESH_TOKEN] [PROJECT_ID]
 ## Project and region
 
 ```bash
-cerebrium projects list
+cerebrium projects list               # -o table|json
 cerebrium projects current
 cerebrium projects set p-abcd1234     # ids are p- prefixed; `project` is a legacy alias
 cerebrium region get
@@ -42,7 +46,7 @@ cerebrium region set us-east-1        # default region for the file commands
 | Command | Notes |
 | --- | --- |
 | `cerebrium init <name>` | Writes `main.py` and `cerebrium.toml`. Name is required. `--dir` chooses where. |
-| `cerebrium deploy` | `--name`, `--config-file ./cerebrium.toml`, `-y`/`--disable-confirmation`, `--yes`, `--detach`, `--disable-build-logs`, `--disable-syntax-check`, `--log-level DEBUG\|INFO`. |
+| `cerebrium deploy` | `--name`, `--config-file ./cerebrium.toml`, `-y`/`--disable-confirmation`, `--detach`, `--disable-build-logs`, `--disable-syntax-check`, `--log-level DEBUG\|INFO`. |
 | `cerebrium run <file>[::func]` | `--data '{"k":"v"}'`, `-r`/`--region`, and any `--key value` pair is passed through to the function. Runs in the cloud, not locally. |
 
 ```bash
@@ -59,12 +63,12 @@ diagnosed by redeploying without them.
 
 | Command | Notes |
 | --- | --- |
-| `cerebrium apps list` | All apps and their state. |
-| `cerebrium apps get APP_ID` | The config actually in effect. |
+| `cerebrium apps list` | All apps and their state. `-o`/`--output table\|json`. |
+| `cerebrium apps get APP_ID` | The config actually in effect. `-o`/`--output table\|json`. |
 | `cerebrium logs APP_NAME` | **Runtime logs only.** Follows by default. `--no-follow`, `--since 30m` (`w\|d\|h\|m\|s` or `YYYY-MM-DD HH:mm:ss`). |
-| `cerebrium containers list APP_NAME` | Per-container state. |
-| `cerebrium runs list APP_NAME` | Recent invocations. |
-| `cerebrium status` | Platform status. |
+| `cerebrium containers list APP_NAME` | Per-container state. `-o`/`--output table\|json`. |
+| `cerebrium runs list APP_NAME` | Recent invocations. `--async` narrows it to asynchronous runs. `-o`/`--output table\|json`. |
+| `cerebrium status` | Platform status. `-o`/`--output table\|json`. |
 | `cerebrium version` | CLI version. |
 
 ## Change live infrastructure
@@ -83,7 +87,8 @@ Confirm with the user before any of these:
 ```bash
 cerebrium secrets add KEY=VALUE OTHER=VALUE
 cerebrium secrets add KEY=VALUE --app APP_ID     # app-scoped instead of project-wide
-cerebrium secrets list
+cerebrium secrets list                           # -o table|json, --app APP_ID to scope it
+cerebrium secrets list --show-values             # values are hidden by default
 ```
 
 Secrets are read at container start, so an existing replica needs a restart or redeploy.
@@ -91,7 +96,7 @@ Secrets are read at container start, so an existing replica needs a restart or r
 ## Persistent storage
 
 ```bash
-cerebrium ls [path]
+cerebrium ls [path]                      # -o table|json
 cerebrium cp <local_path> [remote_path]
 cerebrium download <remote_path> [local_path]
 cerebrium rm <remote_path>
@@ -106,7 +111,9 @@ cerebrium config list
 cerebrium config get <key>
 cerebrium config set <key> <value>
 cerebrium config edit
-cerebrium config telemetry disable   # or enable
+cerebrium config telemetry status
+cerebrium config telemetry enable
+cerebrium config telemetry disable
 ```
 
 ## CI/CD (non-interactive)

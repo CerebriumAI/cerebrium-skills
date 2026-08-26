@@ -28,6 +28,26 @@ is the gate. CI never runs `claude plugin validate`. It runs `npx -y skills-ref 
 every skill and reads the exit status, checks manifest and frontmatter consistency, and runs a
 lychee link check.
 
+## The drift check
+
+`.github/workflows/skill-drift.yml` applies the one rule automatically. It reads the command,
+flag and `cerebrium.toml` surface out of the CLI source with `tools/surfacedump`, compares it to
+the skill with `tools/check_drift.py`, and fails the pull request when the two disagree. It runs
+weekly as well, and opens a pull request with the report when it finds something.
+
+Two things to know before trusting or arguing with it.
+
+- It compares against the latest **released** tag of `CerebriumAI/cerebrium`, never the default
+  branch. A flag can exist on the default branch and be in no release, and an agent following
+  the skill runs the released binary.
+- A `cerebrium.toml` key the skill documents and the CLI does not parse is advisory, never a
+  failure. The CLI uploads the file verbatim, so the backend accepts keys the CLI has no field
+  for. `[cerebrium.experimental]` is one.
+
+`tools/expectations.json` is the only hand-maintained file. Add an entry there when the checker
+is wrong about a specific case, with the reason. An entry that exists only to quieten it is a
+bug in the checker.
+
 ## Writing a skill
 
 - One skill. `skills/cerebrium/SKILL.md` is the always-loaded core: workflow, rules, endpoint
