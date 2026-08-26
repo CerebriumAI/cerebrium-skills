@@ -26,6 +26,12 @@ particular caps `description` at 100 characters, which is easy to exceed while e
 makes the file it names mandatory: setting it without adding that file is a hard validation
 failure, which is why this repository omits it.
 
+## The OpenAI portal archive
+
+Build the submission ZIP with `tools/build-openai-archive.sh`, never by zipping the repository
+root. Which files it leaves out, and what the portal does when they are present, is documented in
+the header comment of that script.
+
 ## CI
 
 `.github/workflows/validate.yml` validates every skill against the Agent Skills spec, checks the
