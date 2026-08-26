@@ -1,6 +1,6 @@
 {
   "name": "cerebrium",
-  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints) with verified cerebrium.toml, hardware, autoscaling and troubleshooting guidance.",
+  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints), with verified cerebrium.toml, hardware and autoscaling guidance.",
   "version": "0.1.0",
   "author": {
     "name": "Cerebrium",
@@ -34,10 +34,10 @@
     "termsOfServiceURL": "https://www.cerebrium.ai/terms-of-service",
     "defaultPrompt": [
       "Deploy this Python inference function to a serverless GPU and give me the endpoint to call.",
-      "My cerebrium.toml keeps resetting settings on deploy. Work out which keys I am missing.",
       "My app is queueing requests under load. Diagnose the scaling config and fix it.",
-      "Pick the GPU and region for a 7B model with bursty traffic, and write the config for it.",
       "Convert this FastAPI app to run on Cerebrium with a WebSocket endpoint."
-    ]
+    ],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

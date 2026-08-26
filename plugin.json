@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "cerebrium",
-  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints) with verified cerebrium.toml, hardware, autoscaling and troubleshooting guidance.",
+  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints), with verified cerebrium.toml, hardware and autoscaling guidance.",
   "version": "0.1.0",
   "author": {
     "name": "Cerebrium",
