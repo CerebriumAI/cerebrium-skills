@@ -31,6 +31,16 @@ Codex:
 codex plugin marketplace add CerebriumAI/cerebrium-skills
 ```
 
+Gemini CLI (one extension bundles the skills and the docs MCP):
+
+```bash
+gemini extensions install https://github.com/CerebriumAI/cerebrium-skills
+```
+
+Cursor loads the repository directly as an [Agent Plugin](https://agent-plugins.org): the root
+`plugin.json` and `mcp.json` are the open-standard manifests, so no Cursor-specific install step
+is needed.
+
 Or agent-driven: paste this into the agent of your choice.
 
 ```
@@ -65,8 +75,15 @@ Cerebrium task appears, and pull in a reference file only when the task needs it
 | `references/hardware.md` | The 13 accepted `compute` identifiers, per-GPU and per-plan limits, preference lists, regional availability, storage. |
 | `references/troubleshooting.md` | Failed builds, queueing, reverted settings, the cold-start playbook. |
 
-The docs MCP (`.mcp.json`, hosted at `https://cerebrium.ai/docs/mcp`) is read-only:
-documentation search and filesystem, no account access, no key needed.
+The docs MCP (hosted at `https://cerebrium.ai/docs/mcp`) is read-only: documentation search and
+filesystem, no account access, no key needed. It is declared twice on purpose, because the two
+formats are not interchangeable: `.mcp.json` is the Claude Code convention, and `mcp.json` at the
+repository root is the path the Agent Plugins standard requires, with that standard's
+`streamable-http` transport name.
+
+The plugin metadata is likewise declared per host: `.claude-plugin/` for Claude Code,
+`.agents/plugins/` for Codex, root `plugin.json` for Agent Plugins clients such as Cursor, and
+`gemini-extension.json` for the Gemini CLI. `server.json` is the MCP registry entry.
 
 ## Try it
 

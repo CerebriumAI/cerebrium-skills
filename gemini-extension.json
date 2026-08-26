@@ -1,0 +1,11 @@
+{
+  "name": "cerebrium",
+  "version": "0.1.0",
+  "description": "Official Cerebrium agent skills and hosted docs MCP: deploy and operate real-time AI workloads on serverless GPU and CPU (REST, streaming, WebSocket and async endpoints) with verified cerebrium.toml, hardware, autoscaling and troubleshooting guidance.",
+  "mcpServers": {
+    "cerebrium-docs": {
+      "type": "http",
+      "url": "https://cerebrium.ai/docs/mcp"
+    }
+  }
+}
