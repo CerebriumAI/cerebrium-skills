@@ -23,5 +23,21 @@
     "streaming",
     "websockets",
     "cerebrium"
-  ]
+  ],
+  "interface": {
+    "displayName": "Cerebrium",
+    "shortDescription": "Deploy and operate Python workloads on serverless GPU and CPU: REST, streaming, WebSocket and async endpoints, with verified cerebrium.toml, hardware, autoscaling and troubleshooting guidance.",
+    "longDescription": "Cerebrium runs Python workloads on serverless GPU and CPU with scale to zero and per second billing: REST endpoints, SSE streaming, WebSockets and async jobs, all described by one cerebrium.toml and driven by one CLI.\n\nThis plugin helps you go from a Python function to a deployed endpoint, and then keep it healthy. It covers choosing hardware, regions and the right runtime, writing and fixing cerebrium.toml, picking a scaling metric that matches the workload, calling the endpoint over REST, streaming, WebSocket or async, handling secrets and environment variables, wiring CI/CD with a service account, and debugging a failed build or an app that is queueing or returning 5xx.\n\nIt is built for inference APIs for language, embedding and vision models, real time voice and video apps, bursty traffic that should not hold idle GPUs, multi region deployments, and migrations from Replicate, Hugging Face or Mystic.",
+    "developerName": "Cerebrium",
+    "websiteURL": "https://www.cerebrium.ai",
+    "privacyPolicyURL": "https://www.cerebrium.ai/privacy",
+    "termsOfServiceURL": "https://www.cerebrium.ai/terms-of-service",
+    "defaultPrompt": [
+      "Deploy this Python inference function to a serverless GPU and give me the endpoint to call.",
+      "My cerebrium.toml keeps resetting settings on deploy. Work out which keys I am missing.",
+      "My app is queueing requests under load. Diagnose the scaling config and fix it.",
+      "Pick the GPU and region for a 7B model with bursty traffic, and write the config for it.",
+      "Convert this FastAPI app to run on Cerebrium with a WebSocket endpoint."
+    ]
+  }
 }
