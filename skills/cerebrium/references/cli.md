@@ -46,7 +46,7 @@ cerebrium region set us-east-1        # default region for the file commands
 | Command | Notes |
 | --- | --- |
 | `cerebrium init <name>` | Writes `main.py` and `cerebrium.toml`. Name is required. `--dir` chooses where. |
-| `cerebrium deploy` | `--name`, `--config-file ./cerebrium.toml`, `-y`/`--disable-confirmation`, `--detach`, `--disable-build-logs`, `--disable-syntax-check`, `--log-level DEBUG\|INFO`. |
+| `cerebrium deploy` | `--name`, `--config-file ./cerebrium.toml`, `-y`/`--disable-confirmation`/`--yes` (the three are equivalent), `--detach`, `--disable-build-logs`, `--disable-syntax-check`, `--log-level DEBUG\|INFO`. |
 | `cerebrium run <file>[::func]` | `--data '{"k":"v"}'`, `-r`/`--region`, and any `--key value` pair is passed through to the function. Runs in the cloud, not locally. |
 
 ```bash
