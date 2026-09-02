@@ -11,7 +11,7 @@
     {
       "name": "cerebrium",
       "displayName": "Cerebrium (Official)",
-      "description": "One Cerebrium skill (workflow, rules, endpoint shapes) with on-demand references for the CLI surface, cerebrium.toml, hardware and regions, and troubleshooting, bundling the read-only Cerebrium docs MCP.",
+      "description": "One Cerebrium skill (workflow, rules, endpoint shapes) with on-demand references for the CLI surface, cerebrium.toml, hardware and regions, and troubleshooting, bundling the Cerebrium docs MCP for documentation search and feedback.",
       "source": "./",
       "category": "deployment",
       "skills": [
