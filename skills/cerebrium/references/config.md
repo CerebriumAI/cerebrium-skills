@@ -67,6 +67,7 @@ Omit both unless you are deploying that partner's image.
 | `port` | partner default | Port the partner service listens on. |
 | `model_name` | partner default | Partner model identifier, for example `arcana` or `mist`. |
 | `language` | partner default | Language code, for example `en`. |
+| `image_version` | partner's current image | Pins the partner image tag, for example `"260728"`. Quote it: it is a string, not a number. |
 
 ```toml
 [cerebrium.runtime.deepgram]
