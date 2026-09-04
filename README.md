@@ -75,8 +75,9 @@ Cerebrium task appears, and pull in a reference file only when the task needs it
 | `references/hardware.md` | The 13 accepted `compute` identifiers, per-GPU and per-plan limits, preference lists, regional availability, storage. |
 | `references/troubleshooting.md` | Failed builds, queueing, reverted settings, the cold-start playbook. |
 
-The docs MCP (hosted at `https://cerebrium.ai/docs/mcp`) is read-only: documentation search and
-filesystem, no account access, no key needed. It is declared twice on purpose, because the two
+The docs MCP (hosted at `https://cerebrium.ai/docs/mcp`) searches and reads the published
+documentation, and accepts documentation feedback: `search_cerebrium`,
+`query_docs_filesystem_cerebrium`, and `submit_feedback`. No account access, no key needed. It is declared twice on purpose, because the two
 formats are not interchangeable: `.mcp.json` is the Claude Code convention, and `mcp.json` at the
 repository root is the path the Agent Plugins standard requires, with that standard's
 `streamable-http` transport name.
